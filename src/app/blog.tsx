@@ -1,7 +1,7 @@
-export default function Home() {
+export default function Blog() {
   return (
     <div className="text-lg">
-      <h1>home</h1>
+      <h1>blog</h1>
     </div>
   );
 }
