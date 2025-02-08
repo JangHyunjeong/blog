@@ -1,8 +1,10 @@
 import Link from 'next/link';
 import blogCategory from '@/data/blogCategory';
-import posts from '@/data/posts';
+import { getPosts } from '@/lib/post';
 
-export default function Blog() {
+const BlogPage = () => {
+  const posts = getPosts();
+
   return (
     <div className="">
       <h1 className="text-2xl font-medium mb-14">Blog</h1>
@@ -25,8 +27,8 @@ export default function Blog() {
       {/* 포스트 리스트 */}
       <ul className="grid ">
         {posts.map((post) => (
-          <li key={post.id}>
-            <Link href="/" className="flex gap-8">
+          <li key={post.slug}>
+            <Link href={`/blog/${post.slug}`} className="flex gap-8">
               <div className="bg-gray-200 w-40 h-40 flex-shrink-0">{/* <Image /> */}</div>
               <div className="flex-1">
                 <span className="border border-gray-300 rounded-md px-3 py-1 text-sm text-gray-500">
@@ -45,4 +47,6 @@ export default function Blog() {
       </ul>
     </div>
   );
-}
+};
+
+export default BlogPage;
