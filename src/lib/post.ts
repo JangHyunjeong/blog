@@ -2,6 +2,13 @@ import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
 import { PostType } from '@/types/Blog';
+import { remark } from 'remark';
+import { rehype } from 'rehype';
+import remarkHtml from 'remark-html';
+import rehypePrism from 'rehype-prism-plus';
+import remarkGfm from 'remark-gfm';
+import remarkToc from 'remark-toc';
+import rehypeSlug from 'rehype-slug';
 
 const postsDirectory = path.join(process.cwd(), '/src/posts');
 
@@ -27,3 +34,37 @@ export const getPosts = () => {
   });
 };
 
+// .mdx 상세 내용 받아오기
+export const getPostDetailBySlug = async (slug: string) => {
+  const fullPath = path.join(postsDirectory, `${slug}.mdx`);
+  const fileContents = fs.readFileSync(fullPath, 'utf8');
+  const { data, content } = matter(fileContents);
+  const { thumbnail = '', category = '', title = '', date = '', description = '' } = data || {};
+  const parsedContent = await parseMarkdownToHtml(content);
+  return {
+    thumbnail,
+    category,
+    title,
+    date,
+    description,
+    content: parsedContent,
+    slug,
+  } as PostType;
+};
+
+export const parseMarkdownToHtml = async (content: string) => {
+  // markdown -> html
+  const processedContent = await remark()
+    .use(remarkGfm) // GitHub Markdown 지원
+    .use(remarkToc) // 목차 생성
+    .use(remarkHtml) // Markdown -> HTML 변환
+    .process(content);
+
+  // styling html
+  const highlightedContent = await rehype()
+    .use(rehypeSlug) // h1, h2, h3 태그에 자동으로 id 추가
+    .use(rehypePrism) // 코드 하이라이트 추가
+    .process(processedContent.toString());
+
+  return highlightedContent.toString();
+};

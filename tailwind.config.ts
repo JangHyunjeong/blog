@@ -1,5 +1,6 @@
 import type { Config } from 'tailwindcss';
 import lineClamp from '@tailwindcss/line-clamp';
+import typography from '@tailwindcss/typography';
 
 export default {
   content: [
@@ -18,5 +19,5 @@ export default {
       },
     },
   },
-  plugins: [lineClamp],
+  plugins: [lineClamp, typography],
 } satisfies Config;
