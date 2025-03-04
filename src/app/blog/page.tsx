@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import blogCategory from '@/data/blogCategory';
 import { getPosts } from '@/lib/post';
+import Category from '@/components/layout/Category';
 
 const BlogPage = () => {
   const posts = getPosts();
@@ -10,19 +10,7 @@ const BlogPage = () => {
       <h1 className="text-2xl font-medium mb-14">Blog</h1>
 
       {/* 카테고리 영역 */}
-      <ul className="category flex gap-2 mb-12">
-        {blogCategory.map((category, index) => (
-          <li key={index}>
-            <button
-              type="button"
-              value={category.value}
-              className="border-gray-300 border px-4 h-10 rounded-md"
-            >
-              {category.title}
-            </button>
-          </li>
-        ))}
-      </ul>
+      <Category />
 
       {/* 포스트 리스트 */}
       <ul className="grid ">
