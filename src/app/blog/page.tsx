@@ -1,32 +1,35 @@
+'use client';
+
 import Link from 'next/link';
-import blogCategory from '@/data/blogCategory';
-import { getPosts } from '@/lib/post';
+import { useEffect, useState } from 'react';
+import Category from '@/components/layout/Category';
+import { PostType } from '@/types/Blog';
 
 const BlogPage = () => {
-  const posts = getPosts();
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [posts, setposts] = useState<PostType[]>();
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      const categoryQuery = selectedCategory ? `?category=${selectedCategory}` : '';
+      const res = await fetch(`/api/category/posts${categoryQuery}`);
+      const data = await res.json();
+      setposts(data);
+    };
+
+    fetchPosts();
+  }, [selectedCategory]);
 
   return (
     <div className="">
       <h1 className="text-2xl font-medium mb-14">Blog</h1>
 
       {/* 카테고리 영역 */}
-      <ul className="category flex gap-2 mb-12">
-        {blogCategory.map((category, index) => (
-          <li key={index}>
-            <button
-              type="button"
-              value={category.value}
-              className="border-gray-300 border px-4 h-10 rounded-md"
-            >
-              {category.title}
-            </button>
-          </li>
-        ))}
-      </ul>
+      <Category onCategoryChange={setSelectedCategory} />
 
       {/* 포스트 리스트 */}
       <ul className="grid ">
-        {posts.map((post) => (
+        {posts?.map((post) => (
           <li key={post.slug}>
             <Link href={`/blog/${post.slug}`} className="flex gap-8">
               <div className="bg-gray-200 w-40 h-40 flex-shrink-0">{/* <Image /> */}</div>
