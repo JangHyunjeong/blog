@@ -68,3 +68,20 @@ export const parseMarkdownToHtml = async (content: string) => {
 
   return highlightedContent.toString();
 };
+
+// category 받아오기
+export const getCategory = () => {
+  const allData = getPosts();
+  const categorys =
+    allData.map((item) => {
+      return { value: item.category.trim().toLowerCase(), label: item.category, isActive: false };
+    }) || [];
+
+  // 중복 카테고리 제거
+  const filteredCategory = [
+    { value: '', label: '전체', isActive: true },
+    ...new Map(categorys.map((item) => [item.value.trim().toLowerCase(), item])).values(),
+  ];
+
+  return filteredCategory as { value: string; label: string; isActive: boolean }[];
+};
