@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import './tailwind.css';
 import Container from '@/components/layout/Container';
 import Head from 'next/head';
 
