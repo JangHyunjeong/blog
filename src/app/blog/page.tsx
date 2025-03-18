@@ -12,7 +12,7 @@ const BlogPage = () => {
   useEffect(() => {
     const fetchPosts = async () => {
       const categoryQuery = selectedCategory ? `?category=${selectedCategory}` : '';
-      const res = await fetch(`/api/category/posts${categoryQuery}`);
+      const res = await fetch(`/api/posts${categoryQuery}`);
       const data = await res.json();
       setposts(data);
     };
