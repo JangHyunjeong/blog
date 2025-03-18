@@ -1,25 +1,30 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+
 interface Category {
   label: string;
   value: string;
   isActive: boolean;
 }
 
-import { useEffect, useState } from 'react';
-
 interface CategoryProps {
   onCategoryChange: (category: string) => void;
 }
 
 export default function Category({ onCategoryChange }: CategoryProps) {
-  const [blogCatgory, setBlogCategory] = useState<Category[]>([]);
+  const [blogCategory, setBlogCategory] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('');
 
   useEffect(() => {
     fetch('/api/category')
       .then((res) => res.json())
-      .then((data) => setBlogCategory(data));
+      .then((data) => {
+        setBlogCategory(data);
+      })
+      .catch((error) => {
+        console.error('Error fetching categories:', error);
+      });
   }, []);
 
   const handleCategoryClick = (categoryValue: string) => {
@@ -27,9 +32,13 @@ export default function Category({ onCategoryChange }: CategoryProps) {
     onCategoryChange(categoryValue);
   };
 
+  if (blogCategory.length === 0) {
+    return null; // blogCategory가 비어 있을 때 빈 값을 반환
+  }
+
   return (
     <ul className="category flex gap-2 mb-12">
-      {blogCatgory.map((category, index) => (
+      {blogCategory.map((category, index) => (
         <li key={index}>
           <button
             type="button"
@@ -42,9 +51,7 @@ export default function Category({ onCategoryChange }: CategoryProps) {
               'rounded-md',
               `${selectedCategory === category.value ? 'bg-sky-700 text-white' : ''}`,
             ].join(' ')}
-            onClick={() => {
-              handleCategoryClick(category.value);
-            }}
+            onClick={() => handleCategoryClick(category.value)}
           >
             {category.label}
           </button>

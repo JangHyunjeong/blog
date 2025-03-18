@@ -12,30 +12,40 @@ import rehypeSlug from 'rehype-slug';
 
 const postsDirectory = path.join(process.cwd(), '/src/posts');
 
-// .mdx 리스트 받아오기기
-export const getPosts = () => {
+// .mdx 리스트 받아오기
+export const getPosts = async (): Promise<PostType[]> => {
   const fileNames = fs.readdirSync(postsDirectory);
-  return fileNames.map((fileName) => {
-    const fullPath = path.join(postsDirectory, fileName);
-    const fileContents = fs.readFileSync(fullPath, 'utf8');
-    const { data = {}, content = '' } = matter(fileContents);
+  const posts = await Promise.all(
+    fileNames.map(async (fileName) => {
+      const fullPath = path.join(postsDirectory, fileName);
+      const fileContents = fs.readFileSync(fullPath, 'utf8');
+      const { data = {}, content = '' } = matter(fileContents);
 
-    const { thumbnail = '', category = '', title = '', date = '', description = '' } = data || {};
+      const { thumbnail = '', category = '', title = '', date = '', description = '' } = data || {};
+      const htmlContent = await parseMarkdownToHtml(content);
+      const htmlString = htmlContent.toString();
+      const paragraphContent =
+        htmlString
+          .match(/<p>(.*?)<\/p>/g)
+          ?.map((p) => p.replace(/<\/?p>/g, '').replace(/<[^>]+>/g, ''))
+          .join(' ') || '';
 
-    return {
-      slug: fileName.replace(/\.mdx$/, ''),
-      thumbnail,
-      category,
-      title,
-      date,
-      description,
-      content,
-    } as PostType;
-  });
+      return {
+        slug: fileName.replace(/\.mdx$/, ''),
+        thumbnail,
+        category,
+        title,
+        date,
+        description,
+        content: paragraphContent,
+      } as PostType;
+    }),
+  );
+  return posts;
 };
 
 // .mdx 상세 내용 받아오기
-export const getPostDetailBySlug = async (slug: string) => {
+export const getPostDetailBySlug = async (slug: string): Promise<PostType> => {
   const fullPath = path.join(postsDirectory, `${slug}.mdx`);
   const fileContents = fs.readFileSync(fullPath, 'utf8');
   const { data, content } = matter(fileContents);
@@ -52,7 +62,7 @@ export const getPostDetailBySlug = async (slug: string) => {
   } as PostType;
 };
 
-export const parseMarkdownToHtml = async (content: string) => {
+export const parseMarkdownToHtml = async (content: string): Promise<string> => {
   // markdown -> html
   const processedContent = await remark()
     .use(remarkGfm) // GitHub Markdown 지원
@@ -70,9 +80,11 @@ export const parseMarkdownToHtml = async (content: string) => {
 };
 
 // category 받아오기
-export const getCategory = () => {
-  const allData = getPosts();
-  const categorys =
+export const getCategory = async () => {
+  const allData = await getPosts();
+
+  if (!allData || allData.length === 0) return [];
+  const categories =
     allData.map((item) => {
       return { value: item.category.trim().toLowerCase(), label: item.category, isActive: false };
     }) || [];
@@ -80,7 +92,7 @@ export const getCategory = () => {
   // 중복 카테고리 제거
   const filteredCategory = [
     { value: '', label: '전체', isActive: true },
-    ...new Map(categorys.map((item) => [item.value.trim().toLowerCase(), item])).values(),
+    ...new Map(categories.map((item) => [item.value.trim().toLowerCase(), item])).values(),
   ];
 
   return filteredCategory as { value: string; label: string; isActive: boolean }[];
